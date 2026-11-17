@@ -1,0 +1,5 @@
+fastapi
+uvicorn[standard]
+pymongo
+upstash-redis
+python-dotenv
