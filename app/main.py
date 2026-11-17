@@ -1,7 +1,10 @@
+import os
 from fastapi import FastAPI, HTTPException
 
 from app.database import db, check_mongodb
 from app.cache import get_cache, set_cache
+
+APP_ENV = os.getenv("APP_ENV", "development")
 
 app = FastAPI(
     title="SIMRS API",
@@ -14,7 +17,7 @@ app = FastAPI(
 def root():
     return {
         "application": "SIMRS API",
-        "environment": "development",
+        "environment": APP_ENV,
         "status": "running"
     }
 

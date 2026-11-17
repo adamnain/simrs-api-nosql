@@ -4,3 +4,9 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 .DS_Store
+# Environment and local backups
+.env
+.env.*
+!.env.example
+*.save
+*.bak
