@@ -129,63 +129,13 @@ UPSTASH_REDIS_REST_TOKEN=
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis URL |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token |
 
-**Catatan:**
-- Jangan mengunggah file `.env` ke repository.
-- Jangan membagikan password, API token, atau credential lainnya.
-- Gunakan data dummy atau data yang sudah disanitasi untuk development.
-- Jangan menyimpan data pasien atau rekam medis sensitif di layanan eksternal tanpa persetujuan keamanan dan tata kelola rumah sakit.
 
 ## 3. Git Workflow
 
 Developer diperbolehkan membuat branch masing-masing untuk pengembangan fitur.
 
-### 1. Get Latest Changes
 
-Sebelum mulai bekerja, pastikan mendapatkan kode terbaru dari `main`:
-
-```bash
-git checkout main
-git pull origin main
-```
-
-### 2. Create Feature Branch
-
-Buat branch sesuai fitur yang dikerjakan:
-
-```bash
-git checkout -b feature/nama-fitur
-```
-
-Contoh:
-
-```bash
-git checkout -b feature/pasien
-git checkout -b feature/registrasi
-git checkout -b feature/rekam-medis
-```
-
-### 3. Commit and Push
-
-Setelah selesai mengembangkan fitur:
-
-```bash
-git add .
-git commit -m "feat: deskripsi perubahan"
-git push origin feature/nama-fitur
-```
-
-### 4. Merge to Main
-
-Setelah fitur selesai dan siap digunakan, gabungkan perubahan ke branch `main`:
-
-```bash
-git checkout main
-git pull origin main
-git merge feature/nama-fitur
-git push origin main
-```
-
-### 5. Live Server Deployment
+### 4. Live Server Deployment
 
 **PENTING:** Setiap perubahan yang berhasil masuk ke branch `main` akan otomatis di-pull dan diterapkan pada live server melalui mekanisme auto-deployment.
 
@@ -232,3 +182,11 @@ simrs-api-nosql/
 - Hindari memasukkan kode yang belum siap digunakan ke `main`.
 - Koordinasikan perubahan dengan anggota tim untuk menghindari konflik.
 
+## Seeding Data
+
+Jalankan perintah dari root project:
+
+```bash
+chmod +x scripts/seed.sh
+./scripts/seed.sh
+```
