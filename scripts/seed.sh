@@ -4,21 +4,18 @@ set -euo pipefail
 
 COMPOSE_FILE="compose.yaml"
 DB_NAME="${DB_NAME:-simrs}"
-DATA_DIR="${DATA_DIR:-./seed-data}"
+
+# Pastikan direktori selalu mengacu ke root project
+PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+DATA_DIR="$PROJECT_DIR/seed-data"
+
+cd "$PROJECT_DIR"
 
 echo "=== SIMRS DEV DATABASE SEEDING ==="
 
-# Pastikan dijalankan dari root project
-if [ ! -f "$COMPOSE_FILE" ]; then
-    echo "ERROR: $COMPOSE_FILE tidak ditemukan."
-    echo "Jalankan script dari root project."
-    exit 1
-fi
-
-# Start MongoDB DEV
+# Start MongoDB
 docker compose -f "$COMPOSE_FILE" up -d mongodb
 
-# Ambil container ID
 MONGO_ID=$(docker compose -f "$COMPOSE_FILE" ps -q mongodb)
 
 if [ -z "$MONGO_ID" ]; then
@@ -40,7 +37,7 @@ for i in $(seq 1 30); do
 
     if [ "$i" -eq 30 ]; then
         echo "ERROR: MongoDB belum healthy."
-        docker compose -f "$COMPOSE_FILE" logs mongodb
+        docker compose logs mongodb
         exit 1
     fi
 
@@ -48,26 +45,18 @@ for i in $(seq 1 30); do
 done
 
 # Ambil credential
-MONGO_USER=$(docker compose -f "$COMPOSE_FILE" exec -T mongodb \
-    printenv MONGO_INITDB_ROOT_USERNAME)
+MONGO_USER=$(docker compose exec -T mongodb printenv MONGO_INITDB_ROOT_USERNAME | tr -d '\r')
+MONGO_PASSWORD=$(docker compose exec -T mongodb printenv MONGO_INITDB_ROOT_PASSWORD | tr -d '\r')
 
-MONGO_PASSWORD=$(docker compose -f "$COMPOSE_FILE" exec -T mongodb \
-    printenv MONGO_INITDB_ROOT_PASSWORD)
-
-# Ambil network aktual dari Compose
+# Ambil network
 NETWORK=$(docker inspect "$MONGO_ID" \
     --format='{{range $name, $config := .NetworkSettings.Networks}}{{$name}}{{end}}')
-
-if [ -z "$NETWORK" ]; then
-    echo "ERROR: Docker network tidak ditemukan."
-    exit 1
-fi
 
 echo "Database : $DB_NAME"
 echo "Network  : $NETWORK"
 echo "Data dir : $DATA_DIR"
 
-# Import semua JSON
+# Periksa file JSON
 shopt -s nullglob
 FILES=("$DATA_DIR"/*.json)
 
@@ -76,14 +65,15 @@ if [ ${#FILES[@]} -eq 0 ]; then
     exit 1
 fi
 
+# Import semua JSON
 for file in "${FILES[@]}"; do
     collection=$(basename "$file" .json)
 
     echo "Importing collection: $collection"
 
-    docker run --rm \
+    MSYS_NO_PATHCONV=1 docker run --rm \
         --network "$NETWORK" \
-        -v "$(cd "$DATA_DIR" && pwd):/seed:ro" \
+        -v "$DATA_DIR:/seed:ro" \
         mongo:8.0 \
         mongoimport \
         --host simrs-mongodb-dev \
