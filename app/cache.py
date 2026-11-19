@@ -1,6 +1,5 @@
 import os
 import json
-from upstash_redis import Redis
 
 redis = None
 
@@ -8,6 +7,8 @@ redis_url = os.getenv("UPSTASH_REDIS_REST_URL")
 redis_token = os.getenv("UPSTASH_REDIS_REST_TOKEN")
 
 if redis_url and redis_token:
+    from upstash_redis import Redis
+
     redis = Redis(
         url=redis_url,
         token=redis_token
@@ -47,3 +48,38 @@ def set_cache(key: str, value, ttl: int = 3600):
 
     except Exception:
         return False
+
+
+def report_version(name: str) -> int:
+    if redis is None:
+        return 0
+
+    try:
+        return int(redis.get(f"simrs:report:{name}:ver") or 0)
+
+    except Exception:
+        return 0
+
+
+def bump_report(*names: str):
+    if redis is None:
+        return
+
+    for name in names:
+        try:
+            redis.incr(f"simrs:report:{name}:ver")
+        except Exception:
+            pass
+
+
+def cached_report(name: str, params: str, compute, ttl: int = 600):
+    key = f"simrs:report:{name}:v{report_version(name)}:{params}"
+    hit = get_cache(key)
+
+    if hit is not None:
+        return {"source": "redis", "data": hit}
+
+    data = compute()
+    set_cache(key, data, ttl=ttl)
+
+    return {"source": "mongodb", "data": data}
