@@ -190,3 +190,31 @@ Jalankan perintah dari root project:
 chmod +x scripts/seed.sh
 ./scripts/seed.sh
 ```
+
+## Testing
+
+Unit test ada di `tests/` (`pytest`). Test tidak memakai Docker, MongoDB, dan Upstash asli
+
+**macOS / Linux:**
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements-dev.txt
+```
+
+**Windows PowerShell:**
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements-dev.txt
+```
+
+Jalankan test:
+
+```bash
+python -m pytest tests -q
+```
+
+Untuk mencoba endpoint pada database beneran, jalankan aplikasi, seed data, lalu buka http://localhost:8000/docs.
