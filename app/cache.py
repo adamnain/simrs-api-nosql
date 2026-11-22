@@ -72,14 +72,28 @@ def bump_report(*names: str):
             pass
 
 
-def cached_report(name: str, params: str, compute, ttl: int = 600):
-    key = f"simrs:report:{name}:v{report_version(name)}:{params}"
+def cached(key: str, compute, ttl: int = 3600) -> tuple:
+    """Return (data, source): from Redis when cached, otherwise compute() from MongoDB and store it."""
     hit = get_cache(key)
 
     if hit is not None:
-        return {"source": "redis", "data": hit}
+        return hit, "redis"
 
     data = compute()
     set_cache(key, data, ttl=ttl)
 
-    return {"source": "mongodb", "data": data}
+    return data, "mongodb"
+
+
+def cached_report(name: str, params: str, compute, ttl: int = 600):
+    key = f"simrs:report:{name}:v{report_version(name)}:{params}"
+    data, source = cached(key, compute, ttl=ttl)
+
+    return {"source": source, "data": data}
+
+
+def cached_master(collection: str, compute, ttl: int = 3600) -> dict:
+    key = f"simrs:master:{collection}"
+    rows, source = cached(key, compute, ttl=ttl)
+
+    return {"metadata": {"source": source, "collection": collection, "total": len(rows)}, "data": rows}

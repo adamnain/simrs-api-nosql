@@ -67,7 +67,7 @@ def contains_key(obj, key):
 
 def test_every_endpoint_refuses_the_wrong_http_method(client):
     paths = {p: ops for p, ops in app.openapi()["paths"].items() if p.startswith("/api/") and p != "/api/unit-layanan"}
-    assert sum(len(ops) for ops in paths.values()) == 20
+    assert sum(len(ops) for p, ops in paths.items() if not p.startswith("/api/master/")) == 20
     for path, ops in paths.items():
         allowed = {m.upper() for m in ops}
         url = re.sub(r"\{[^}]+\}", "1", path)

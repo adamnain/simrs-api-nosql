@@ -7,7 +7,7 @@ from pymongo.errors import PyMongoError
 
 from app.database import db, check_mongodb, ensure_indexes
 from app.cache import get_cache, set_cache
-from app.routers import laporan, pasien, pelayanan, pembayaran, pendaftaran
+from app.routers import laporan, master, pasien, pelayanan, pembayaran, pendaftaran
 
 APP_ENV = os.getenv("APP_ENV", "development")
 
@@ -34,7 +34,7 @@ async def mongo_unavailable(_request, _exc):
     return JSONResponse(status_code=503, content={"detail": "database tidak tersedia"})
 
 
-for router_module in (pasien, pendaftaran, pelayanan, pembayaran, laporan):
+for router_module in (pasien, pendaftaran, pelayanan, pembayaran, laporan, master):
     app.include_router(router_module.router)
 
 
@@ -65,32 +65,3 @@ def database_health():
         )
 
 
-@app.get("/api/unit-layanan")
-def get_unit_layanan():
-    cache_key = "simrs:master:unit_layanan"
-
-    cached_data = get_cache(cache_key)
-
-    if cached_data is not None:
-        return {
-            "source": "redis",
-            "data": cached_data
-        }
-
-    try:
-        documents = list(
-            db.unit_layanan.find({}, {"_id": 0})
-        )
-
-        set_cache(cache_key, documents, ttl=3600)
-
-        return {
-            "source": "mongodb",
-            "data": documents
-        }
-
-    except Exception:
-        raise HTTPException(
-            status_code=503,
-            detail="Unable to retrieve unit layanan"
-        )
