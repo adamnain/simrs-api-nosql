@@ -164,7 +164,8 @@ def visit_counts(db, tanggal: str, id_jadwal: str | None = None) -> dict:
     schedule = {"id_jadwal": id_jadwal} if id_jadwal else {"id_jadwal": {"$ne": None}}
     handled = list(chunked_find(db.penanganan_medis, "id_pelayanan_medis", services, extra=schedule))
     outpatient = {d["no_registrasi"] for d in
-                  chunked_find(db.rawat_jalan, "no_registrasi", {services[h["id_pelayanan_medis"]] for h in handled})}
+                  chunked_find(db.pendaftaran, "no_registrasi", {services[h["id_pelayanan_medis"]] for h in handled},
+                               extra={"jenis_tindakan": "Rawat_Jalan"})}
 
     visits = {}
     for h in handled:

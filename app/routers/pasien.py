@@ -87,7 +87,8 @@ def pasien_empat_layanan(db=Depends(get_db)):
     services = list(chunked_find(db.pelayanan_medis, "id_pelayanan_medis", surgery,
                                  projection={"_id": 0, "no_registrasi": 1}))
     candidates = {s["no_registrasi"] for s in services}
-    outpatient = {d["no_registrasi"] for d in chunked_find(db.rawat_jalan, "no_registrasi", candidates)}
+    outpatient = {d["no_registrasi"] for d in chunked_find(db.pendaftaran, "no_registrasi", candidates,
+                                                                   extra={"jenis_tindakan": "Rawat_Jalan"})}
 
     names = ("penanganan_medis", "operasi", "perawatan_klinis", "penunjang_medis")
     service_reg = {d["id_pelayanan_medis"]: d["no_registrasi"] for d in

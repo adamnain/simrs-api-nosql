@@ -52,7 +52,7 @@ def test_s10_only_visit_with_all_four_service_types(client):
 
 
 def test_s10_ignores_non_outpatient_visit(client, db):
-    db.rawat_jalan.delete_one({"no_registrasi": "1"})
+    db.pendaftaran.update_one({"no_registrasi": "1"}, {"$set": {"jenis_tindakan": "IGD"}})
     assert client.get("/api/pasien/empat-layanan").json() == {"data": []}
 
 

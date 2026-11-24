@@ -100,8 +100,6 @@ def seed(db):
          "hasil_penanganan": None, "nik_pasien": "3171000000000002", "id_penjamin": "2", "id_pegawai": "11",
          "klaim_asuransi": []},
     ])
-    db.rawat_jalan.insert_many([{"no_registrasi": "1"}, {"no_registrasi": "3"}])
-    db.igd.insert_many([{"no_registrasi": "2"}])
 
     def pm(i, reg, layanan, unit, mulai, selesai):
         return {"id_pelayanan_medis": i, "no_registrasi": reg, "id_layanan": layanan, "versi_harga": "2026",

@@ -139,7 +139,6 @@ def daftar_rawat_jalan(body: RawatJalan, db=Depends(get_db)):
     try:
         writes.insert("pendaftaran", new_visit(no_registrasi, tanggal, jam, "Rawat_Jalan", body.nik_pasien,
                                                body.id_penjamin, body.id_pegawai))
-        writes.insert("rawat_jalan", {"no_registrasi": no_registrasi})
 
     except Exception:
         writes.rollback()
@@ -159,7 +158,6 @@ def daftar_igd(body: Igd, db=Depends(get_db)):
     try:
         writes.insert("pendaftaran", new_visit(no_registrasi, today(), datetime.now().strftime("%H:%M:%S"), "IGD",
                                                body.nik_pasien, id_penjamin, body.id_pegawai))
-        writes.insert("igd", {"no_registrasi": no_registrasi})
 
     except Exception:
         writes.rollback()
@@ -172,7 +170,7 @@ def daftar_igd(body: Igd, db=Depends(get_db)):
 def perbarui_penjamin_igd(no_registrasi: str, body: PenjaminBaru, db=Depends(get_db)):
     visit = get_pendaftaran(db, no_registrasi)
 
-    if db.igd.find_one({"no_registrasi": no_registrasi}) is None:
+    if visit["jenis_tindakan"] != "IGD":
         raise HTTPException(status_code=409, detail="bukan kunjungan IGD")
 
     require(db, "penjamin", "id_penjamin", body.id_penjamin, "penjamin")
@@ -276,7 +274,6 @@ def permintaan_penunjang(no_registrasi: str, body: Penunjang, db=Depends(get_db)
             "id_pegawai_paramedis": body.id_pegawai_paramedis,
             **support,
         })
-        writes.insert(body.jenis, {"id_pelayanan_medis": id_pelayanan, **detail})
 
     except Exception:
         writes.rollback()
